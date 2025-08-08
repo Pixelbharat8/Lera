@@ -242,7 +242,6 @@ export const useSupabaseApi = () => {
     getSessionAttendees,
     // Tasks
     createTask,
-    createSuperAdminTask,
     submitTask,
     gradeSubmission,
     getStudentTasks,
@@ -291,7 +290,7 @@ export const useSupabaseApi = () => {
     getStudentCurriculumProgress,
     generateParentReport,
     // Super Admin Task Management
-    createTask,
+    createSuperAdminTask,
     assignTaskToEmployees,
     assignTaskToStudents,
     getAllTasks,
