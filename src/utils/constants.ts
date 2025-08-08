@@ -18,7 +18,6 @@ export const ROUTES = {
   TASKS: '/tasks',
   ABOUT: '/about',
   CONTACT: '/contact',
-  CONTACT: '/contact',
   AUTH: '/auth',
   PRIVACY: '/privacy',
   ADMIN: '/admin'
