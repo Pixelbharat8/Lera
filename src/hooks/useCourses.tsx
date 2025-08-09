@@ -1,4 +1,5 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { Course, Lesson, SearchFilters, CourseStats } from '../types/index';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
@@ -53,11 +54,7 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    loadCourses();
-  }, [user]);
-
-  const loadCourses = async () => {
+  const loadCourses = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -97,7 +94,11 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadCourses();
+  }, [user, loadCourses]);
   const getCourse = (id: string) => {
     return courses.find(course => course.id === id);
   };

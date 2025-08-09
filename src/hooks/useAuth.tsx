@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User } from '../types/index';
 import { supabase } from '../lib/supabase';

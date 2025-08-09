@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { CheckCircle, AlertCircle, Info, X } from 'lucide-react';

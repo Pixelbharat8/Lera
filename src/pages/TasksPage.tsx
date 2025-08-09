@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../hooks/useLanguage';
 import { supabase } from '../lib/supabase';
@@ -27,13 +27,51 @@ const TasksPage = () => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [submissionContent, setSubmissionContent] = useState('');
-  useEffect(() => {
-    if (user) {
-      loadTasks();
+
+  const setMockTasks = useCallback(() => {
+    const mockTasks: Task[] = [
+      {
+        id: '1',
+        title: 'Welcome Assignment - Introduction',
+        description: 'Introduce yourself in English and tell us about your learning goals.',
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'pending',
+        priority: 'medium'
+      },
+      {
+        id: '2',
+        title: 'Practice Exercise - Basic Conversation',
+        description: 'Complete the conversation practice exercise using common daily phrases.',
+        due_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'pending',
+        priority: 'medium'
+      }
+    ];
+    setTasks(mockTasks);
+  }, []);
+
+  const createSampleTasks = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      await supabase
+        .from('tasks')
+        .insert([
+          {
+            student_id: user.id,
+            title: 'Welcome Assignment - Introduction',
+            description: 'Introduce yourself in English and tell us about your learning goals.',
+            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            status: 'pending',
+            priority: 'medium'
+          }
+        ]);
+    } catch (error) {
+      console.error('Error creating sample tasks:', error);
     }
   }, [user]);
 
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -84,50 +122,13 @@ const TasksPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, setMockTasks, createSampleTasks]);
 
-  const setMockTasks = () => {
-    const mockTasks: Task[] = [
-      {
-        id: '1',
-        title: 'Welcome Assignment - Introduction',
-        description: 'Introduce yourself in English and tell us about your learning goals.',
-        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'pending',
-        priority: 'medium'
-      },
-      {
-        id: '2',
-        title: 'Practice Exercise - Basic Conversation',
-        description: 'Complete the conversation practice exercise using common daily phrases.',
-        due_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'pending',
-        priority: 'medium'
-      }
-    ];
-    setTasks(mockTasks);
-  };
-
-  const createSampleTasks = async () => {
-    if (!user) return;
-
-    try {
-      await supabase
-        .from('tasks')
-        .insert([
-          {
-            student_id: user.id,
-            title: 'Welcome Assignment - Introduction',
-            description: 'Introduce yourself in English and tell us about your learning goals.',
-            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            status: 'pending',
-            priority: 'medium'
-          }
-        ]);
-    } catch (error) {
-      console.error('Error creating sample tasks:', error);
+  useEffect(() => {
+    if (user) {
+      loadTasks();
     }
-  };
+  }, [user, loadTasks]);
 
   const handleSubmit = async (taskId: string) => {
     try {

@@ -34,24 +34,24 @@ const AdminCurriculum = () => {
   const { callEdgeFunction } = useSupabaseApi();
 
   useEffect(() => {
+    const fetchCurriculumData = async () => {
+      try {
+        const [levelsResult, materialsResult] = await Promise.all([
+          callEdgeFunction('curriculum-management', { action: 'get_curriculum_levels' }),
+          callEdgeFunction('curriculum-management', { action: 'get_course_materials' })
+        ]);
+
+        setCurriculumLevels(levelsResult.levels);
+        setCourseMaterials(materialsResult.materials);
+      } catch (error) {
+        console.error('Error fetching curriculum data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchCurriculumData();
-  }, []);
-
-  const fetchCurriculumData = async () => {
-    try {
-      const [levelsResult, materialsResult] = await Promise.all([
-        callEdgeFunction('curriculum-management', { action: 'get_curriculum_levels' }),
-        callEdgeFunction('curriculum-management', { action: 'get_course_materials' })
-      ]);
-
-      setCurriculumLevels(levelsResult.levels);
-      setCourseMaterials(materialsResult.materials);
-    } catch (error) {
-      console.error('Error fetching curriculum data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [callEdgeFunction]);
 
   const filteredMaterials = courseMaterials.filter(material => {
     const matchesSearch = material.series_name.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 
 interface LanguageContextType {
@@ -24,6 +25,7 @@ const translations = {
     'nav.courses': 'Courses',
     'nav.about': 'About',
     'nav.tasks': 'Tasks',
+    'nav.workflows': 'Workflows',
     'nav.contact': 'Contact',
     'nav.admin': 'Admin',
     'nav.signin': 'Sign in',
@@ -256,6 +258,7 @@ const translations = {
     'nav.courses': 'Khóa Học',
     'nav.about': 'Giới Thiệu',
     'nav.tasks': 'Bài Tập',
+    'nav.workflows': 'Quy trình',
     'nav.contact': 'Liên Hệ',
     'nav.admin': 'Quản Trị',
     'nav.signin': 'Đăng Nhập',

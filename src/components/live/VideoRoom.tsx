@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from 'react';
 import Peer from 'simple-peer';
 import { supabase } from '../../lib/supabase';

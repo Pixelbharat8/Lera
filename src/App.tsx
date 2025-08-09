@@ -21,6 +21,8 @@ import TeacherRoutes from './routes/TeacherRoutes';
 import StudentRoutes from './routes/StudentRoutes';
 import EmployeeRoutes from './routes/EmployeeRoutes';
 import HRRoutes from './routes/HRRoutes';
+import ServerStatusPage from './pages/ServerStatusPage';
+import WorkflowsPage from './pages/WorkflowsPage';
 import RoleBasedRedirect from './components/auth/RoleBasedRedirect';
 import { AuthProvider } from './contexts/AuthContext';
 import { CourseProvider } from './contexts/CourseContext';
@@ -74,6 +76,8 @@ function App() {
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/messages" element={<MessagesPage />} />
                         <Route path="/settings" element={<SettingsPage />} />
+                        <Route path={ROUTES.SERVER_STATUS} element={<ServerStatusPage />} />
+                        <Route path={ROUTES.WORKFLOWS} element={<WorkflowsPage />} />
                       </Routes>
                     </main>
                     <Footer />

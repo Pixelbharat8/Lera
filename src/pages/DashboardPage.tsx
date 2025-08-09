@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useCourses } from '../hooks/useCourses';
 import { useAuth } from '../hooks/useAuth';
@@ -26,13 +25,7 @@ const DashboardPage = () => {
 
   const userCourses = courses.filter(course => course.enrolled);
 
-  useEffect(() => {
-    if (user) {
-      loadDashboardData();
-    }
-  }, [user]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       // Get user statistics from database
       const { data: enrollmentStats } = await supabase
@@ -60,7 +53,13 @@ const DashboardPage = () => {
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadDashboardData();
+    }
+  }, [user, loadDashboardData]);
   
   // Ensure realistic minimum values for better UX
   const displayStats = {

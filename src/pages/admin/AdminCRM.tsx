@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSupabaseApi } from '../../hooks/useSupabaseApi';
 import { 
   Users, 
@@ -134,7 +134,7 @@ const AdminCRM = () => {
   const { callEdgeFunction } = useSupabaseApi();
 
   // Mock data for comprehensive CRM
-  const mockStudents: Student[] = [
+  const mockStudents = useMemo<Student[]>(() => [
     {
       id: '1',
       full_name: 'Nguyen Minh Duc',
@@ -222,9 +222,9 @@ const AdminCRM = () => {
       payment_status: 'current',
       communication_preferences: { email: true, sms: false, whatsapp: true }
     }
-  ];
+  ], []);
 
-  const mockTeachers: Teacher[] = [
+  const mockTeachers = useMemo<Teacher[]>(() => [
     {
       id: '1',
       full_name: 'Ms. Ledia Balliu',
@@ -324,7 +324,7 @@ const AdminCRM = () => {
         { start_date: '2024-01-01', end_date: '2024-06-30', type: 'Part-time Contract', salary: 15000, status: 'active' }
       ]
     }
-  ];
+  ], []);
 
   useEffect(() => {
     // Simulate loading data
@@ -333,7 +333,7 @@ const AdminCRM = () => {
       setTeachers(mockTeachers);
       setLoading(false);
     }, 1000);
-  }, []);
+  }, [mockStudents, mockTeachers]);
 
   const filteredStudents = students.filter(student => {
     const matchesSearch = student.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||

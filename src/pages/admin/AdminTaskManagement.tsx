@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSupabaseApi } from '../../hooks/useSupabaseApi';
 import { 
   Plus, 
@@ -94,11 +94,7 @@ const AdminTaskManagement = () => {
     notes: ''
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [tasksResult, employeesResult, studentsResult] = await Promise.all([
@@ -115,7 +111,11 @@ const AdminTaskManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [callEdgeFunction]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleCreateTask = async () => {
     try {
