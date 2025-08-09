@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
+export type EdgeFunctionPayload = Record<string, unknown>;
+
 export const useSupabaseApi = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const callEdgeFunction = async (functionName: string, payload: any) => {
+  const callEdgeFunction = async (
+    functionName: string,
+    payload: EdgeFunctionPayload
+  ) => {
     setLoading(true);
     setError(null);
 
@@ -39,7 +44,7 @@ export const useSupabaseApi = () => {
     callEdgeFunction('manage-enrollment', { action: 'get_progress', courseId });
 
   // Live Session API calls
-  const createLiveSession = (sessionData: any) => 
+  const createLiveSession = (sessionData: EdgeFunctionPayload) =>
     callEdgeFunction('manage-live-session', { action: 'create', sessionData });
 
   const joinLiveSession = (sessionId: string) => 
@@ -58,13 +63,13 @@ export const useSupabaseApi = () => {
     callEdgeFunction('manage-live-session', { action: 'get_attendees', sessionId });
 
   // Task Management API calls
-  const createTask = (taskData: any) => 
+  const createTask = (taskData: EdgeFunctionPayload) =>
     callEdgeFunction('manage-tasks', { action: 'create_task', taskData });
 
-  const submitTask = (taskId: string, submissionData: any) => 
+  const submitTask = (taskId: string, submissionData: EdgeFunctionPayload) =>
     callEdgeFunction('manage-tasks', { action: 'submit_task', taskId, submissionData });
 
-  const gradeSubmission = (submissionData: any) => 
+  const gradeSubmission = (submissionData: EdgeFunctionPayload) =>
     callEdgeFunction('manage-tasks', { action: 'grade_submission', submissionData });
 
   const getStudentTasks = () => 
@@ -90,10 +95,13 @@ export const useSupabaseApi = () => {
     callEdgeFunction('gamification', { action: 'get_user_stats' });
 
   // Student Management API calls
-  const createStudent = (studentData: any) =>
+  const createStudent = (studentData: EdgeFunctionPayload) =>
     callEdgeFunction('student-management', { action: 'create_student', studentData });
 
-  const updateStudent = (studentId: string, studentData: any) =>
+  const updateStudent = (
+    studentId: string,
+    studentData: EdgeFunctionPayload
+  ) =>
     callEdgeFunction('student-management', { action: 'update_student', studentId, studentData });
 
   const getStudentDetails = (studentId: string) =>
@@ -109,10 +117,10 @@ export const useSupabaseApi = () => {
     callEdgeFunction('student-management', { action: 'get_student_progress', studentId });
 
   // Teacher Management API calls
-  const teacherCheckIn = (attendanceData: any) =>
+  const teacherCheckIn = (attendanceData: EdgeFunctionPayload) =>
     callEdgeFunction('teacher-management', { action: 'check_in', attendanceData });
 
-  const teacherCheckOut = (attendanceData: any) =>
+  const teacherCheckOut = (attendanceData: EdgeFunctionPayload) =>
     callEdgeFunction('teacher-management', { action: 'check_out', attendanceData });
 
   const getTeacherSchedule = (teacherId?: string) =>
@@ -121,17 +129,17 @@ export const useSupabaseApi = () => {
   const getTeacherStudents = (teacherId?: string) =>
     callEdgeFunction('teacher-management', { action: 'get_teacher_students', teacherId });
 
-  const recordClassSession = (sessionData: any) =>
-    callEdgeFunction('teacher-management', { action: 'record_class_session', teacherData: sessionData });
+  const recordClassSession = (sessionData: EdgeFunctionPayload) =>
+    callEdgeFunction('teacher-management', { action: 'record_class_session', sessionData });
 
   const getTeacherPerformance = (teacherId?: string) =>
     callEdgeFunction('teacher-management', { action: 'get_teacher_performance', teacherId });
 
-  const updateTeacherProfile = (teacherData: any) =>
+  const updateTeacherProfile = (teacherData: EdgeFunctionPayload) =>
     callEdgeFunction('teacher-management', { action: 'update_teacher_profile', teacherData });
 
   // Assessment Management API calls
-  const createAssessment = (assessmentData: any) =>
+  const createAssessment = (assessmentData: EdgeFunctionPayload) =>
     callEdgeFunction('assessment-management', { action: 'create_assessment', assessmentData });
 
   const getStudentAssessments = (studentId: string) =>
@@ -140,7 +148,7 @@ export const useSupabaseApi = () => {
   const getCourseAssessments = (courseId: string) =>
     callEdgeFunction('assessment-management', { action: 'get_course_assessments', courseId });
 
-  const updateAssessment = (assessmentData: any) =>
+  const updateAssessment = (assessmentData: EdgeFunctionPayload) =>
     callEdgeFunction('assessment-management', { action: 'update_assessment', assessmentData });
 
   const generateProgressReport = (studentId: string) =>
@@ -162,11 +170,11 @@ export const useSupabaseApi = () => {
   const getPaymentHistory = () =>
     callEdgeFunction('parent-portal', { action: 'get_payment_history' });
 
-  const sendMessageToTeacher = (messageData: any) =>
-    callEdgeFunction('parent-portal', { action: 'send_message_to_teacher', parentData: messageData });
+  const sendMessageToTeacher = (messageData: EdgeFunctionPayload) =>
+    callEdgeFunction('parent-portal', { action: 'send_message_to_teacher', messageData });
 
-  const updateParentPreferences = (preferences: any) =>
-    callEdgeFunction('parent-portal', { action: 'update_parent_preferences', parentData: preferences });
+  const updateParentPreferences = (preferences: EdgeFunctionPayload) =>
+    callEdgeFunction('parent-portal', { action: 'update_parent_preferences', preferences });
 
   // Curriculum Management API calls
   const getCurriculumLevels = () =>
@@ -175,13 +183,13 @@ export const useSupabaseApi = () => {
   const getCourseMaterials = () =>
     callEdgeFunction('curriculum-management', { action: 'get_course_materials' });
 
-  const createLessonPlan = (planData: any) =>
+  const createLessonPlan = (planData: EdgeFunctionPayload) =>
     callEdgeFunction('curriculum-management', { action: 'create_lesson_plan', data: planData });
 
   const getLessonPlans = (courseId: string) =>
     callEdgeFunction('curriculum-management', { action: 'get_lesson_plans', data: { courseId } });
 
-  const conductPlacementTest = (testData: any) =>
+  const conductPlacementTest = (testData: EdgeFunctionPayload) =>
     callEdgeFunction('curriculum-management', { action: 'conduct_placement_test', data: testData });
 
   const getStudentCurriculumProgress = (studentId: string) =>
@@ -191,13 +199,13 @@ export const useSupabaseApi = () => {
     callEdgeFunction('curriculum-management', { action: 'generate_parent_report', data: { studentId } });
 
   // Super Admin Task Management API calls
-  const createSuperAdminTask = (taskData: any) =>
+  const createSuperAdminTask = (taskData: EdgeFunctionPayload) =>
     callEdgeFunction('super-admin-tasks', { action: 'create_task', taskData });
 
-  const assignTaskToEmployees = (assignmentData: any) =>
+  const assignTaskToEmployees = (assignmentData: EdgeFunctionPayload) =>
     callEdgeFunction('super-admin-tasks', { action: 'assign_task_to_employees', assignmentData });
 
-  const assignTaskToStudents = (assignmentData: any) =>
+  const assignTaskToStudents = (assignmentData: EdgeFunctionPayload) =>
     callEdgeFunction('super-admin-tasks', { action: 'assign_task_to_students', assignmentData });
 
   const getAllTasks = () =>
@@ -209,16 +217,16 @@ export const useSupabaseApi = () => {
   const getStudents = () =>
     callEdgeFunction('super-admin-tasks', { action: 'get_students' });
 
-  const createEmployee = (employeeData: any) =>
+  const createEmployee = (employeeData: EdgeFunctionPayload) =>
     callEdgeFunction('super-admin-tasks', { action: 'create_employee', employeeData });
 
-  const updateTaskStatus = (taskData: any) =>
+  const updateTaskStatus = (taskData: EdgeFunctionPayload) =>
     callEdgeFunction('super-admin-tasks', { action: 'update_task_status', taskData });
 
   const getTaskAnalytics = () =>
     callEdgeFunction('super-admin-tasks', { action: 'get_task_analytics' });
 
-  const bulkAssignTasks = (assignmentData: any) =>
+  const bulkAssignTasks = (assignmentData: EdgeFunctionPayload) =>
     callEdgeFunction('super-admin-tasks', { action: 'bulk_assign_tasks', assignmentData });
 
   const getDepartmentPerformance = () =>
@@ -242,7 +250,6 @@ export const useSupabaseApi = () => {
     getSessionAttendees,
     // Tasks
     createTask,
-    createSuperAdminTask,
     submitTask,
     gradeSubmission,
     getStudentTasks,
@@ -291,7 +298,7 @@ export const useSupabaseApi = () => {
     getStudentCurriculumProgress,
     generateParentReport,
     // Super Admin Task Management
-    createTask,
+    createSuperAdminTask,
     assignTaskToEmployees,
     assignTaskToStudents,
     getAllTasks,
