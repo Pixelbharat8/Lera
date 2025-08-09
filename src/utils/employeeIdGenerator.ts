@@ -30,7 +30,8 @@ export class EmployeeIdGenerator {
   static async getNextEmployeeNumber(): Promise<number> {
     try {
       // This would query the database in a real implementation
-      // SELECT MAX(CAST(SUBSTRING(employee_id FROM 'LERA-EMP-[0-9]{4}-([0-9]{4})') AS INTEGER)) FROM employees WHERE employee_id LIKE 'LERA-EMP-2025-%'
+      // SELECT MAX(CAST(SUBSTRING(employee_id FROM 'LERA-EMP-[0-9]{4}-([0-9]{4})') AS INTEGER))
+      // FROM employees WHERE employee_id LIKE 'LERA-EMP-${currentYear}-%'
       
       const lastCounter = parseInt(localStorage.getItem(this.STORAGE_KEY) || '0');
       return lastCounter + 1;

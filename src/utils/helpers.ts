@@ -1,4 +1,4 @@
-import { Course, User, Lesson } from '../types';
+import { User, Lesson } from '../types';
 
 // Date formatting utilities
 export const formatDate = (date: string | Date, format: 'short' | 'long' | 'time' = 'short') => {
@@ -138,8 +138,9 @@ export const getUserRole = (role: string) => {
 
 // Analytics utilities
 export const calculateEngagementRate = (views: number, enrollments: number) => {
-  if (enrollments === 0) return 0;
-  return Math.round((views / enrollments) * 100);
+  if (views === 0) return 0;
+  // Percentage of viewers who enroll
+  return Math.round((enrollments / views) * 100);
 };
 
 export const calculateCompletionRate = (completed: number, enrolled: number) => {
@@ -148,7 +149,7 @@ export const calculateCompletionRate = (completed: number, enrolled: number) => 
 };
 
 // Local storage utilities
-export const setLocalStorage = (key: string, value: any) => {
+export const setLocalStorage = <T>(key: string, value: T) => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
@@ -156,7 +157,7 @@ export const setLocalStorage = (key: string, value: any) => {
   }
 };
 
-export const getLocalStorage = (key: string, defaultValue: any = null) => {
+export const getLocalStorage = <T>(key: string, defaultValue: T | null = null): T | null => {
   try {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
@@ -205,7 +206,7 @@ export const getFileExtension = (filename: string) => {
 };
 
 // Debounce utility
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
@@ -217,7 +218,7 @@ export const debounce = <T extends (...args: any[]) => any>(
 };
 
 // Throttle utility
-export const throttle = <T extends (...args: any[]) => any>(
+export const throttle = <T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): ((...args: Parameters<T>) => void) => {

@@ -163,7 +163,7 @@ const AuthPage = () => {
       // Handle Supabase auth errors
       if (errorCode) {
         switch (errorCode) {
-          case 'user_already_exists':
+          case 'user_already_exists': {
             errorMessage = 'This email is already registered. Please sign in instead.';
             // Auto-switch to sign in
             setIsRegister(false);
@@ -174,6 +174,7 @@ const AuthPage = () => {
             // Clear registration-only fields
             setFormData(prev => ({ ...prev, name: '', confirmPassword: '' }));
             break;
+          }
           case 'invalid_credentials':
             errorMessage = 'Invalid email or password. Please check your credentials and try again.';
             break;
