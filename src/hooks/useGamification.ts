@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Gamification, Badge, Achievement } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -8,13 +8,7 @@ export const useGamification = () => {
   const [gamification, setGamification] = useState<Gamification | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchGamificationData();
-    }
-  }, [user]);
-
-  const fetchGamificationData = async () => {
+  const fetchGamificationData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -50,7 +44,13 @@ export const useGamification = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchGamificationData();
+    }
+  }, [user, fetchGamificationData]);
 
   const awardPoints = async (points: number, reason: string) => {
     if (!user || !gamification) return;

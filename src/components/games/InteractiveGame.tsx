@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Trophy, Target, Zap, Star, Heart, Gift, RotateCcw, ArrowRight } from 'lucide-react';
 
 interface GameProps {
@@ -138,11 +138,11 @@ const InteractiveGame: React.FC<GameProps> = ({ type, level, onComplete }) => {
     setTimeLeft(60);
   };
 
-  const completeGame = () => {
+  const completeGame = useCallback(() => {
     setIsGameActive(false);
     onComplete?.(score);
     showCelebration(`🏆 Game Complete! Final Score: ${score} points!`);
-  };
+  }, [onComplete, score]);
 
   useEffect(() => {
     if (isGameActive && timeLeft > 0) {
@@ -151,7 +151,7 @@ const InteractiveGame: React.FC<GameProps> = ({ type, level, onComplete }) => {
     } else if (timeLeft === 0 && isGameActive) {
       completeGame();
     }
-  }, [timeLeft, isGameActive]);
+  }, [timeLeft, isGameActive, completeGame]);
 
   if (!currentGame) {
     return (

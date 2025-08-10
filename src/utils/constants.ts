@@ -16,11 +16,12 @@ export const ROUTES = {
   LESSON: '/lesson/:lessonId',
   DASHBOARD: '/dashboard',
   TASKS: '/tasks',
+  WORKFLOWS: '/workflows',
   ABOUT: '/about',
-  CONTACT: '/contact',
   CONTACT: '/contact',
   AUTH: '/auth',
   PRIVACY: '/privacy',
+  SERVER_STATUS: '/server-status',
   ADMIN: '/admin'
 } as const;
 

@@ -49,7 +49,7 @@ const CoursesPage = () => {
       setFilteredCourses(courses);
     }
     }
-  }, [courses]);
+  }, [courses, filters, searchCourses]);
   const updateFilter = (key: keyof SearchFilters, value: any) => {
     console.log('Updating filter:', key, value);
     setFilters(prev => ({ ...prev, [key]: value }));

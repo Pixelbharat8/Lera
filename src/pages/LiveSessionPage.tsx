@@ -66,7 +66,7 @@ const LiveSessionPage = () => {
         });
       }
     };
-  }, [sessionId, user?.id]);
+  }, [sessionId, user, isInstructor]);
 
   if (error) {
     return (

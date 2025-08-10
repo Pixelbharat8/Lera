@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { Bell, CheckCircle, AlertCircle, Info, X, Mail, Calendar, BookOpen, Award } from 'lucide-react';
@@ -22,16 +21,64 @@ const NotificationsPage = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      loadNotifications();
+  const setMockNotifications = useCallback(() => {
+    setNotifications([
+      {
+        id: '1',
+        userId: user?.id || '',
+        title: 'Welcome to LERA Academy!',
+        message: 'Start your English learning journey with our expert instructors and interactive courses.',
+        type: 'info',
+        read: false,
+        createdAt: new Date().toISOString(),
+        actionUrl: '/courses',
+        actionText: 'Browse Courses',
+        priority: 'medium',
+        category: 'Welcome'
+      },
+      {
+        id: '2',
+        title: 'Course Recommendation',
+        message: 'Based on your profile, we recommend starting with our English Foundation Builder course.',
+        type: 'info',
+        read: false,
+        createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+        actionUrl: '/courses/3',
+        actionText: 'View Course',
+        priority: 'medium',
+        category: 'Recommendation',
+        userId: user?.id || ''
+      }
+    ]);
+  }, [user]);
+
+  const createSampleNotifications = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      await supabase
+        .from('notifications')
+        .insert([
+          {
+            user_id: user.id,
+            title: 'Welcome to LERA Academy!',
+            message: 'Start your English learning journey with our expert instructors and interactive courses.',
+            type: 'info',
+            read: false,
+            action_url: '/courses',
+            action_text: 'Browse Courses',
+            category: 'Welcome'
+          }
+        ]);
+    } catch (error) {
+      console.error('Error creating sample notifications:', error);
     }
   }, [user]);
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       // First try to get real notifications from database
       const { data: dbNotifications, error } = await supabase
         .from('notifications')
@@ -72,61 +119,13 @@ const NotificationsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, setMockNotifications, createSampleNotifications]);
 
-  const setMockNotifications = () => {
-    setNotifications([
-      {
-        id: '1',
-        userId: user?.id || '',
-        title: 'Welcome to LERA Academy!',
-        message: 'Start your English learning journey with our expert instructors and interactive courses.',
-        type: 'info',
-        read: false,
-        createdAt: new Date().toISOString(),
-        actionUrl: '/courses',
-        actionText: 'Browse Courses',
-        priority: 'medium',
-        category: 'Welcome'
-      },
-      {
-        id: '2',
-        title: 'Course Recommendation',
-        message: 'Based on your profile, we recommend starting with our English Foundation Builder course.',
-        type: 'info',
-        read: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-        actionUrl: '/courses/3',
-        actionText: 'View Course',
-        priority: 'medium',
-        category: 'Recommendation',
-        userId: user?.id || ''
-      }
-    ]);
-  };
-
-  const createSampleNotifications = async () => {
-    if (!user) return;
-
-    try {
-      await supabase
-        .from('notifications')
-        .insert([
-          {
-            user_id: user.id,
-            title: 'Welcome to LERA Academy!',
-            message: 'Start your English learning journey with our expert instructors and interactive courses.',
-            type: 'info',
-            read: false,
-            action_url: '/courses',
-            action_text: 'Browse Courses',
-            category: 'Welcome'
-          }
-        ]);
-    } catch (error) {
-      console.error('Error creating sample notifications:', error);
+  useEffect(() => {
+    if (user) {
+      loadNotifications();
     }
-  };
+  }, [user, loadNotifications]);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
