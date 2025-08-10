@@ -1,16 +1,11 @@
-import { useEffect } from 'react';
 import React, { useState } from 'react';
 import { 
   Mail, 
   MessageSquare, 
-  Phone, 
   Send, 
-  Users, 
-  Filter,
   Search,
   Calendar,
   Paperclip,
-  Star,
   Clock,
   CheckCircle,
   AlertCircle
@@ -34,7 +29,7 @@ interface CommunicationCenterProps {
   userId: string;
 }
 
-const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ userType, userId }) => {
+const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ userType: _userType, userId: _userId }) => {
   const [activeTab, setActiveTab] = useState<'inbox' | 'sent' | 'compose'>('inbox');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [composeData, setComposeData] = useState({
