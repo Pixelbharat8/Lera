@@ -291,7 +291,6 @@ export const useSupabaseApi = () => {
     getStudentCurriculumProgress,
     generateParentReport,
     // Super Admin Task Management
-    createTask,
     assignTaskToEmployees,
     assignTaskToStudents,
     getAllTasks,
