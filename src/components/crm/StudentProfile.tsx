@@ -42,7 +42,7 @@ interface StudentProfileProps {
     total_study_hours: number;
     payment_status: 'current' | 'overdue' | 'pending';
   };
-  onUpdate?: (updatedStudent: any) => void;
+  onUpdate?: (updatedStudent: StudentProfileProps['student']) => void;
   onClose?: () => void;
 }
 
@@ -163,7 +163,7 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ student, onUpdate, onCl
           ].map(({ key, label, icon: Icon }) => (
             <button
               key={key}
-              onClick={() => setActiveTab(key as any)}
+              onClick={() => setActiveTab(key as 'overview' | 'progress' | 'communication' | 'notes')}
               className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
                 activeTab === key
                   ? 'border-blue-500 text-blue-600'

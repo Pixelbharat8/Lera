@@ -148,7 +148,7 @@ const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ userType: _us
           ].map(({ key, label, icon: Icon, count }) => (
             <button
               key={key}
-              onClick={() => setActiveTab(key as any)}
+              onClick={() => setActiveTab(key as 'inbox' | 'sent' | 'compose')}
               className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
                 activeTab === key
                   ? 'border-blue-500 text-blue-600'
@@ -258,7 +258,7 @@ const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ userType: _us
                   <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
                   <select
                     value={composeData.type}
-                    onChange={(e) => setComposeData({...composeData, type: e.target.value as any})}
+                    onChange={(e) => setComposeData({...composeData, type: e.target.value as 'email' | 'sms' | 'internal'})}
                     className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   >
                     <option value="email">Email</option>
@@ -284,7 +284,7 @@ const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ userType: _us
                   <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                   <select
                     value={composeData.priority}
-                    onChange={(e) => setComposeData({...composeData, priority: e.target.value as any})}
+                    onChange={(e) => setComposeData({...composeData, priority: e.target.value as 'low' | 'medium' | 'high'})}
                     className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   >
                     <option value="low">Low</option>

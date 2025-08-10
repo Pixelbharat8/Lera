@@ -100,7 +100,7 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ userId: _userId, user
         <div className="flex items-center space-x-4 mt-4 sm:mt-0">
           <select
             value={selectedTimeframe}
-            onChange={(e) => setSelectedTimeframe(e.target.value as any)}
+            onChange={(e) => setSelectedTimeframe(e.target.value as '1week' | '1month' | '3months' | '6months' | '1year')}
             className="rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="1week">Last Week</option>
