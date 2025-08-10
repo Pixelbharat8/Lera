@@ -4,9 +4,7 @@ import {
   Mail, 
   Phone, 
   Calendar, 
-  BookOpen, 
   TrendingUp, 
-  Award, 
   Clock,
   Edit,
   Save,
@@ -16,11 +14,8 @@ import {
   GraduationCap,
   DollarSign,
   CheckCircle,
-  AlertTriangle,
   BarChart3,
-  MessageSquare,
-  FileText,
-  Target
+  FileText
 } from 'lucide-react';
 
 interface TeacherProfileProps {

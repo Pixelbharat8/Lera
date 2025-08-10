@@ -6,7 +6,6 @@ import HomePage from './pages/HomePage';
 import CoursesPage from './pages/CoursesPage';
 import CourseDetailPage from './pages/CourseDetailPage';
 import LessonPage from './pages/LessonPage';
-import DashboardPage from './pages/DashboardPage';
 import TasksPage from './pages/TasksPage';
 import AuthPage from './pages/AuthPage';
 import AboutPage from './pages/AboutPage';

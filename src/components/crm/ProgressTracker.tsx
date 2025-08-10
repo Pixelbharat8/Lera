@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { 
@@ -9,9 +8,7 @@ import {
   BookOpen, 
   Star,
   Calendar,
-  Filter,
-  Download,
-  ChevronDown
+  Download
 } from 'lucide-react';
 
 interface ProgressData {
@@ -34,9 +31,8 @@ interface ProgressTrackerProps {
   timeframe?: '1week' | '1month' | '3months' | '6months' | '1year';
 }
 
-const ProgressTracker: React.FC<ProgressTrackerProps> = ({ userId, userType, timeframe = '3months' }) => {
+const ProgressTracker: React.FC<ProgressTrackerProps> = ({ userId: _userId, userType: _userType, timeframe = '3months' }) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState(timeframe);
-  const [selectedMetric, setSelectedMetric] = useState<'all' | 'attendance' | 'performance' | 'completion'>('all');
 
   // Mock progress data
   const progressData: ProgressData[] = [
@@ -104,7 +100,7 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ userId, userType, tim
         <div className="flex items-center space-x-4 mt-4 sm:mt-0">
           <select
             value={selectedTimeframe}
-            onChange={(e) => setSelectedTimeframe(e.target.value as any)}
+            onChange={(e) => setSelectedTimeframe(e.target.value as '1week' | '1month' | '3months' | '6months' | '1year')}
             className="rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="1week">Last Week</option>
