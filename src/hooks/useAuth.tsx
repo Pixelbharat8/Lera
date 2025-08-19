@@ -1,7 +1,16 @@
-/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { User } from '../types/index';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  role: 'student' | 'instructor' | 'admin' | 'super_admin' | 'hr_staff' | 'employee';
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -27,40 +36,140 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Determine user role based on email
+  const determineUserRole = (email: string): User['role'] => {
+    const emailLower = email.toLowerCase();
+    
+    if (emailLower === 'superadmin@lera-academy.com') return 'super_admin';
+    if (emailLower === 'admin@lera-academy.com') return 'admin';
+    if (emailLower === 'teacher@lera-academy.com') return 'instructor';
+    if (emailLower === 'hr@lera-academy.com') return 'hr_staff';
+    if (emailLower === 'employee@lera-academy.com') return 'employee';
+    
+    // Check for instructor emails
+    if (emailLower.includes('teacher') || emailLower.includes('instructor')) return 'instructor';
+    if (emailLower.includes('admin')) return 'admin';
+    if (emailLower.includes('hr')) return 'hr_staff';
+    
+    return 'student'; // Default role
+  };
+
+  const createOrUpdateProfile = async (authUser: SupabaseUser): Promise<User> => {
+    try {
+      const role = determineUserRole(authUser.email || '');
+      
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .single();
+
+      let profile;
+      
+      if (existingProfile) {
+        // Update existing profile
+        const { data: updatedProfile, error } = await supabase
+          .from('profiles')
+          .update({
+            email: authUser.email,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', authUser.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        profile = updatedProfile;
+      } else {
+        // Create new profile
+        const { data: newProfile, error } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: authUser.id,
+            full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+            email: authUser.email || '',
+            avatar_url: authUser.user_metadata?.avatar_url || '/ceo.jpg',
+            role: role
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        profile = newProfile;
+      }
+
+      return {
+        id: profile.id,
+        name: profile.full_name || 'User',
+        email: profile.email || authUser.email || '',
+        avatar: profile.avatar_url || '/ceo.jpg',
+        role: role,
+        createdAt: profile.created_at || new Date().toISOString(),
+        updatedAt: profile.updated_at || new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Error creating/updating profile:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
       try {
+        // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
+        
         if (error) {
           console.error('Session error:', error);
-          setIsLoading(false);
+          if (mounted) {
+            setUser(null);
+            setIsLoading(false);
+          }
           return;
         }
-        
-        if (session?.user) {
-          console.log('Initial session found for user:', session.user.id);
-          await fetchUserProfile(session.user.id);
-        } else {
-          console.log('No initial session found');
+
+        if (session?.user && mounted) {
+          console.log('Initial session found, creating profile...');
+          const userProfile = await createOrUpdateProfile(session.user);
+          setUser(userProfile);
+        } else if (mounted) {
           setUser(null);
-          setIsLoading(false);
         }
       } catch (error) {
-        console.error('Error getting initial session:', error);
-        setIsLoading(false);
+        console.error('Auth initialization error:', error);
+        if (mounted) {
+          setUser(null);
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    getInitialSession();
+    initializeAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        console.log('Auth state changed:', event);
         
+        if (!mounted) return;
+
         if (event === 'SIGNED_IN' && session?.user) {
-          await fetchUserProfile(session.user.id);
+          try {
+            setIsLoading(true);
+            const userProfile = await createOrUpdateProfile(session.user);
+            setUser(userProfile);
+          } catch (error) {
+            console.error('Error handling sign in:', error);
+            setUser(null);
+          } finally {
+            setIsLoading(false);
+          }
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setIsLoading(false);
@@ -68,104 +177,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
-
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      setIsLoading(true);
-      console.log('Fetching profile for user:', userId);
-      
-      // Get user from auth
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-      if (authError) {
-        console.error('Auth user error:', authError);
-        throw authError;
-      }
-
-      // Try to get existing profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      let profile = profileData;
-
-      // If no profile exists, create one
-      if (!profile && authUser) {
-        console.log('Creating new profile for user:', userId);
-        
-        const newProfileData = {
-          user_id: userId,
-          full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-          email: authUser.email || '',
-          avatar_url: '/ceo.jpg'
-        };
-
-        const { data: createdProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert(newProfileData)
-          .select()
-          .single();
-
-        if (createError) {
-          console.error('Error creating profile:', createError);
-          throw createError;
-        }
-
-        profile = createdProfile;
-        console.log('Profile created successfully:', profile);
-      }
-
-      if (!profile) {
-        throw new Error('Could not create or fetch user profile');
-      }
-
-      // Determine user role based on email for demo accounts
-      let userRole = 'student'; // default role
-      
-      if (authUser?.email) {
-        const email = authUser.email.toLowerCase();
-        if (email === 'superadmin@lera-academy.com') {
-          userRole = 'super_admin';
-        } else if (email === 'admin@lera-academy.com') {
-          userRole = 'admin';
-        } else if (email === 'teacher@lera-academy.com') {
-          userRole = 'instructor';
-        } else if (email === 'hr@lera-academy.com') {
-          userRole = 'hr_staff';
-        } else if (email === 'employee@lera-academy.com') {
-          userRole = 'employee';
-        }
-      }
-
-      console.log('User role determined:', userRole);
-
-      // Set user state
-      setUser({
-        id: profile.id,
-        name: profile.full_name || 'User',
-        email: profile.email || authUser?.email || '',
-        avatar: profile.avatar_url || '/ceo.jpg',
-        role: userRole,
-        createdAt: profile.created_at || new Date().toISOString(),
-        updatedAt: profile.updated_at || new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
       console.log('Attempting login for:', email);
-      
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password
@@ -177,8 +199,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (data.user) {
-        console.log('Login successful for user:', data.user.id);
-        await fetchUserProfile(data.user.id);
+        console.log('Login successful, creating profile...');
+        const userProfile = await createOrUpdateProfile(data.user);
+        setUser(userProfile);
+        console.log('User profile set:', userProfile);
       }
     } catch (error) {
       setIsLoading(false);
@@ -190,7 +214,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       console.log('Attempting registration for:', email);
-      
+
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -207,8 +231,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (data.user) {
-        console.log('Registration successful for user:', data.user.id);
-        await fetchUserProfile(data.user.id);
+        console.log('Registration successful, creating profile...');
+        const userProfile = await createOrUpdateProfile(data.user);
+        setUser(userProfile);
+        console.log('User profile set:', userProfile);
       }
     } catch (error) {
       setIsLoading(false);
@@ -218,12 +244,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
+      console.log('Logging out...');
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Logout error:', error);
         throw error;
       }
       setUser(null);
+      console.log('Logout successful');
     } catch (error) {
       console.error('Error during logout:', error);
       throw error;
@@ -239,12 +267,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const updateData: any = {};
       if (data.name) updateData.full_name = data.name;
       if (data.avatar) updateData.avatar_url = data.avatar;
-      if (data.bio) updateData.bio = data.bio;
 
       const { error } = await supabase
         .from('profiles')
         .update(updateData)
-        .eq('user_id', user.id);
+        .eq('id', user.id);
 
       if (error) {
         console.error('Profile update error:', error);
