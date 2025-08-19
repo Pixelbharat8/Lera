@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Users, GraduationCap, Settings, BarChart3, Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { Users, GraduationCap, Settings, BarChart3, Plus, Search, Edit, Trash2, Eye, Zap, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const SuperAdminDashboard = () => {
   return (
@@ -16,7 +17,7 @@ const SuperAdminDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="card-3d bg-white p-6 rounded-xl shadow-lg border">
           <div className="flex items-center">
             <div className="p-3 bg-blue-100 rounded-lg">
@@ -86,6 +87,33 @@ const SuperAdminDashboard = () => {
             <button className="w-full bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 transition-colors">
               Edit Design
             </button>
+          </div>
+        </div>
+
+        <div className="card-3d bg-white p-6 rounded-xl shadow-lg border">
+          <div className="flex items-center">
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <Zap className="h-8 w-8 text-purple-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500">AI Automation</p>
+              <p className="text-2xl font-bold text-gray-900">Platform</p>
+              <p className="text-sm text-purple-600">Full Control</p>
+            </div>
+          </div>
+          <div className="mt-4 space-y-2">
+            <Link
+              to="/admin/ai-automation"
+              className="block w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors text-center"
+            >
+              Manage Workflows
+            </Link>
+            <Link
+              to="/admin/automation-access"
+              className="block w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors text-center"
+            >
+              User Access Control
+            </Link>
           </div>
         </div>
       </div>
