@@ -22,7 +22,6 @@ const Navbar = () => {
     { name: t('nav.about'), path: '/about' },
     { name: t('nav.tasks'), path: '/tasks' },
     { name: t('nav.workflows'), path: '/workflows' },
-    { name: 'AI Automation', path: '/automation' },
     { name: t('nav.contact'), path: '/contact' },
     ...(user?.role === 'admin' ? [{ name: t('nav.admin'), path: '/admin' }] : [])
   ];

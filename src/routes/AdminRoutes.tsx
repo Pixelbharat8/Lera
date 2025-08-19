@@ -18,6 +18,7 @@ import AdminGamification from '../pages/admin/AdminGamification';
 import AdminReports from '../pages/admin/AdminReports';
 import AdminTeachers from '../pages/admin/AdminTeachers';
 import AdminWorkflows from '../pages/admin/AdminWorkflows';
+import AdminAutomationAccess from '../pages/admin/AdminAutomationAccess';
 import SuperAdminDashboard from '../pages/admin/SuperAdminDashboard';
 import SuperAdminTeachers from '../pages/admin/SuperAdminTeachers';
 import SuperAdminStudents from '../pages/admin/SuperAdminStudents';
@@ -46,6 +47,8 @@ const AdminRoutes = () => {
             <Route path="manage-students" element={<SuperAdminStudents />} />
             <Route path="system-data" element={<SuperAdminSystemData />} />
             <Route path="design-settings" element={<SuperAdminDesignSettings />} />
+            <Route path="ai-automation" element={<AdminWorkflows />} />
+            <Route path="automation-access" element={<AdminAutomationAccess />} />
           </>
         ) : (
           /* Regular Admin Routes */

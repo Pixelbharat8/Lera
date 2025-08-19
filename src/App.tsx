@@ -79,7 +79,6 @@ function App() {
                         <Route path="/settings" element={<SettingsPage />} />
                         <Route path={ROUTES.SERVER_STATUS} element={<ServerStatusPage />} />
                         <Route path={ROUTES.WORKFLOWS} element={<WorkflowsPage />} />
-                        <Route path="/automation" element={<AutomationDashboard />} />
                       </Routes>
                     </main>
                     <Footer />

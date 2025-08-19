@@ -17,7 +17,8 @@ import {
   Clock,
   GraduationCap,
   ClipboardCheck,
-  Zap
+  Zap,
+  Shield
 } from 'lucide-react';
 import { Trophy, FileText, Shield, MapPin } from 'lucide-react';
 
@@ -35,6 +36,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     { name: 'Manage Students', path: '/admin/manage-students', icon: GraduationCap },
     { name: 'System Data', path: '/admin/system-data', icon: BarChart3 },
     { name: 'Design Settings', path: '/admin/design-settings', icon: Settings },
+    { name: 'AI Automation', path: '/admin/ai-automation', icon: Zap },
+    { name: 'Automation Access', path: '/admin/automation-access', icon: Shield },
   ];
 
   // Regular Admin gets full navigation

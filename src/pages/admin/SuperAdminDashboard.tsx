@@ -113,6 +113,14 @@ const SuperAdminDashboard = () => {
                 <Settings className="h-5 w-5 text-green-600 mr-3" />
                 <span className="text-green-800 font-medium">Customize Platform Design</span>
               </div>
+              <div className="flex items-center p-3 bg-green-50 rounded-lg">
+                <Zap className="h-5 w-5 text-green-600 mr-3" />
+                <span className="text-green-800 font-medium">Full AI Automation Platform Control</span>
+              </div>
+              <div className="flex items-center p-3 bg-green-50 rounded-lg">
+                <Shield className="h-5 w-5 text-green-600 mr-3" />
+                <span className="text-green-800 font-medium">Grant/Revoke Automation Access to Users</span>
+              </div>
             </div>
           </div>
 
