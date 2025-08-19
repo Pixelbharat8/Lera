@@ -59,19 +59,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log('Fetching user profile for:', userId);
       
-      const { data, error } = await supabase
+      // First, fetch the profile data
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_roles!inner(role_type, is_active)
-        `)
+        .select('*')
         .eq('user_id', userId)
         .single();
 
-      if (error) {
-        console.error('Profile fetch error:', error);
+      if (profileError) {
+        console.error('Profile fetch error:', profileError);
         // If profile doesn't exist, create a basic one
-        if (error.code === 'PGRST116') {
+        if (profileError.code === 'PGRST116') {
           console.log('Profile not found, creating basic profile');
           const { data: authUser } = await supabase.auth.getUser();
           if (authUser.user) {
@@ -102,12 +100,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               });
             
             console.log('Profile created:', createdProfile);
+            
+            // Get the role for the newly created user
+            const { data: roleData } = await supabase
+              .from('user_roles')
+              .select('role_type, is_active')
+              .eq('user_id', userId)
+              .eq('is_active', true)
+              .single();
+            
+            const userRole = roleData?.role_type || 'student';
+            
             setUser({
               id: createdProfile.id,
               name: createdProfile.full_name,
               email: createdProfile.email,
               avatar: createdProfile.avatar_url,
-              role: 'student',
+              role: userRole,
               createdAt: createdProfile.created_at,
               updatedAt: createdProfile.updated_at
             });
@@ -115,22 +124,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return;
           }
         }
-        throw error;
+        throw profileError;
       }
 
-      console.log('Profile fetched successfully:', data);
+      console.log('Profile fetched successfully:', profileData);
       
-      // Get the most recent active role
-      const userRole = data.user_roles?.[0]?.role_type || 'student';
+      // Now fetch the user roles separately
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role_type, is_active')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .single();
+      
+      if (roleError && roleError.code !== 'PGRST116') {
+        console.error('Role fetch error:', roleError);
+      }
+      
+      // Get the role, default to 'student' if no role found
+      const userRole = roleData?.role_type || 'student';
+      
+      console.log('User role fetched:', userRole);
       
       setUser({
-        id: data.id,
-        name: data.full_name || 'User',
-        email: data.email || '',
-        avatar: data.avatar_url || '/ceo.jpg',
+        id: profileData.id,
+        name: profileData.full_name || 'User',
+        email: profileData.email || '',
+        avatar: profileData.avatar_url || '/ceo.jpg',
         role: userRole,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at
+        createdAt: profileData.created_at,
+        updatedAt: profileData.updated_at
       });
     } catch (error) {
       console.error('Error fetching user profile:', error);
