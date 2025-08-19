@@ -20,7 +20,7 @@ import {
   Zap,
   Shield
 } from 'lucide-react';
-import { Trophy, FileText, Shield, MapPin } from 'lucide-react';
+import { Trophy, FileText, MapPin } from 'lucide-react';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
