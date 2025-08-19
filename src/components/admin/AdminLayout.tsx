@@ -53,7 +53,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     { name: 'Live Classes', path: '/admin/live-classes', icon: Video },
     { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
     { name: 'Payments', path: '/admin/payments', icon: CreditCard },
-    { name: 'Curriculum', path: '/admin/curriculum', icon: GraduationCurriculum },
+    { name: 'Curriculum', path: '/admin/curriculum', icon: GraduationCap },
     { name: 'Attendance', path: '/admin/attendance', icon: Clock },
     { name: 'Task Management', path: '/admin/task-management', icon: ClipboardCheck },
     { name: 'Gamification', path: '/admin/gamification', icon: Trophy },
