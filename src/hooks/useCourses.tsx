@@ -59,32 +59,22 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       setError(null);
 
-      // Load mock data immediately
+      // Load mock data immediately for demo
       console.log('Loading mock courses:', mockCourses.length);
       setCourses(mockCourses);
       setLessons(mockLessons);
 
-      // If user is logged in, check their enrollments
+      // For demo purposes, mark some courses as enrolled for authenticated users
       if (user) {
-        try {
-          const { data: enrollmentData } = await supabase
-            .from('enrollments')
-            .select('course_id, progress')
-            .eq('user_id', user.id);
-
-          if (enrollmentData) {
-            setCourses(prevCourses =>
-              prevCourses.map(course => {
-                const enrollment = enrollmentData.find(e => e.course_id === course.id);
-                return enrollment 
-                  ? { ...course, enrolled: true, progress: enrollment.progress || 0 }
-                  : course;
-              })
-            );
-          }
-        } catch (enrollmentError) {
-          console.log('Could not load enrollments, using mock data only');
-        }
+        setCourses(prevCourses =>
+          prevCourses.map((course, index) => {
+            // Mark first 2 courses as enrolled for demo
+            if (index < 2) {
+              return { ...course, enrolled: true, progress: Math.floor(Math.random() * 80) + 20 };
+            }
+            return course;
+          })
+        );
       }
       
       console.log('Courses loaded successfully:', mockCourses.length);
@@ -119,14 +109,8 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('User must be logged in to enroll');
       }
 
-      const { error } = await supabase
-        .from('enrollments')
-        .insert({
-          user_id: user.id,
-          course_id: courseId
-        });
-
-      if (error) throw error;
+      // For demo purposes, just update local state
+      console.log('Enrolling user in course:', courseId);
 
       // Update local state
       setCourses(prevCourses =>
@@ -152,15 +136,8 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (!user) return;
       
-      const { error } = await supabase
-        .from('lesson_progress')
-        .upsert({
-          user_id: user.id,
-          lesson_id: lessonId,
-          completed: true
-        });
-
-      if (error) throw error;
+      // For demo purposes, just update local state
+      console.log('Marking lesson complete:', lessonId);
 
       // Update local state
       setLessons(prevLessons =>
@@ -178,11 +155,8 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
         const completedLessons = courseLessons.filter(l => l.completed || l.id === lessonId).length;
         const progressPercentage = Math.round((completedLessons / courseLessons.length) * 100);
 
-        await supabase
-          .from('enrollments')
-          .update({ progress: progressPercentage })
-          .eq('user_id', user.id)
-          .eq('course_id', lesson.courseId);
+        // Update local course progress for demo
+        console.log('Updating course progress:', progressPercentage);
 
         // Update local course progress
         setCourses(prevCourses =>

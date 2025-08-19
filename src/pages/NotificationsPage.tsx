@@ -79,40 +79,9 @@ const NotificationsPage = () => {
     try {
       setLoading(true);
 
-      // First try to get real notifications from database
-      const { data: dbNotifications, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) {
-        console.error('Error fetching notifications:', error);
-        // Use mock data as fallback
-        setMockNotifications();
-      } else if (dbNotifications && dbNotifications.length > 0) {
-        // Transform database notifications
-        const transformedNotifications: Notification[] = dbNotifications.map(notification => ({
-          id: notification.id,
-          userId: notification.user_id,
-          title: notification.title,
-          message: notification.message,
-          type: notification.type as 'info' | 'success' | 'warning' | 'error',
-          read: notification.read || false,
-          createdAt: notification.created_at,
-          actionUrl: notification.action_url,
-          actionText: notification.action_text,
-          priority: 'medium' as const,
-          category: notification.category || 'General',
-          expiresAt: notification.expires_at
-        }));
-        setNotifications(transformedNotifications);
-      } else {
-        // No notifications in database, create some sample ones
-        await createSampleNotifications();
-        setMockNotifications();
-      }
+      // For demo purposes, use mock data
+      console.log('Loading demo notifications for user:', user?.id);
+      setMockNotifications();
     } catch (error) {
       console.error('Error loading notifications:', error);
       setMockNotifications();

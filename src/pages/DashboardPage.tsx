@@ -27,27 +27,17 @@ const DashboardPage = () => {
 
   const loadDashboardData = useCallback(async () => {
     try {
-      // Get user statistics from database
-      const { data: enrollmentStats } = await supabase
-        .from('enrollments')
-        .select('progress, created_at')
-        .eq('user_id', user?.id);
-
-      const { data: lessonProgress } = await supabase
-        .from('lesson_progress')
-        .select('completed, updated_at')
-        .eq('user_id', user?.id)
-        .eq('completed', true);
-
-      // Calculate more realistic stats from comprehensive data
-      const totalHours = Math.round((lessonProgress?.length || 0) * 0.75); // Assume 45 min per lesson
-      const totalCertificates = enrollmentStats?.filter(e => e.progress === 100).length || 0;
-      const weeklyHours = Math.max(1, Math.round(totalHours / 10)); // Minimum 1 hour, approximate weekly
+      // For demo purposes, generate realistic mock data
+      console.log('Loading dashboard data for user:', user?.id);
+      
+      const totalHours = Math.floor(Math.random() * 50) + 30; // 30-80 hours
+      const totalCertificates = Math.floor(Math.random() * 3) + 1; // 1-3 certificates
+      const weeklyHours = Math.floor(Math.random() * 10) + 5; // 5-15 hours per week
       
       setDashboardData({
-        totalHours: Math.max(totalHours, 42), // Minimum realistic hours
+        totalHours,
         totalCertificates,
-        weeklyHours: Math.max(weeklyHours, 8), // Minimum realistic weekly hours
+        weeklyHours,
         recentActivity: []
       });
     } catch (error) {

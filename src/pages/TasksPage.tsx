@@ -75,47 +75,9 @@ const TasksPage = () => {
     try {
       setLoading(true);
       
-      // Try to fetch real tasks from database
-      const { data: dbTasks, error } = await supabase
-        .from('tasks')
-        .select(`
-          *,
-          submission:task_submissions(
-            id,
-            content,
-            feedback,
-            score
-          )
-        `)
-        .eq('student_id', user?.id)
-        .order('due_date', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching tasks:', error);
-        // Use mock data as fallback
-        setMockTasks();
-      } else if (dbTasks && dbTasks.length > 0) {
-        // Transform database tasks
-        const transformedTasks: Task[] = dbTasks.map(task => ({
-          id: task.id,
-          title: task.title,
-          description: task.description,
-          due_date: task.due_date,
-          status: task.status as Task['status'],
-          priority: task.priority as Task['priority'],
-          submission: task.submission?.[0] ? {
-            id: task.submission[0].id,
-            content: task.submission[0].content,
-            feedback: task.submission[0].feedback,
-            score: task.submission[0].score
-          } : undefined
-        }));
-        setTasks(transformedTasks);
-      } else {
-        // No tasks in database, create some sample ones
-        await createSampleTasks();
-        setMockTasks();
-      }
+      // For demo purposes, use mock data
+      console.log('Loading demo tasks for user:', user?.id);
+      setMockTasks();
     } catch (error) {
       console.error('Error loading tasks:', error);
       setMockTasks();
@@ -132,16 +94,8 @@ const TasksPage = () => {
 
   const handleSubmit = async (taskId: string) => {
     try {
-      // Submit to database
-      const { error } = await supabase
-        .from('task_submissions')
-        .insert({
-          task_id: taskId,
-          student_id: user?.id,
-          content: submissionContent
-        });
-
-      if (error) throw error;
+      // For demo purposes, just update local state
+      console.log('Submitting task:', taskId, submissionContent);
 
       // Update local state
       setTasks(prevTasks =>

@@ -17,6 +17,8 @@ const RoleBasedRedirect = () => {
       // Redirect based on user role
       switch (user?.role) {
         case 'super_admin':
+          navigate('/admin');
+          break;
         case 'admin':
           navigate('/admin');
           break;

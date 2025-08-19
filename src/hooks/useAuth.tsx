@@ -2,7 +2,6 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User } from '../types/index';
 import { supabase } from '../lib/supabase';
-import { WorkflowTriggers } from '../components/workflows/WorkflowTriggers';
 
 interface AuthContextType {
   user: User | null;
@@ -30,21 +29,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      } else {
-        setUser(null);
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Session error:', error);
+          setIsLoading(false);
+          return;
+        }
+        
+        if (session?.user) {
+          console.log('Initial session found for user:', session.user.id);
+          await fetchUserProfile(session.user.id);
+        } else {
+          console.log('No initial session found');
+          setUser(null);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error);
         setIsLoading(false);
       }
-    });
+    };
+
+    getInitialSession();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (session?.user) {
+        console.log('Auth state changed:', event, session?.user?.id);
+        
+        if (event === 'SIGNED_IN' && session?.user) {
           await fetchUserProfile(session.user.id);
-        } else {
+        } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setIsLoading(false);
         }
@@ -55,108 +72,89 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
-    setIsLoading(true);
     try {
-      console.log('Fetching user profile for:', userId);
+      setIsLoading(true);
+      console.log('Fetching profile for user:', userId);
       
-      // First, fetch the profile data
+      // Get user from auth
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      if (authError) {
+        console.error('Auth user error:', authError);
+        throw authError;
+      }
+
+      // Try to get existing profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      if (profileError) {
-        console.error('Profile fetch error:', profileError);
-        // If profile doesn't exist, create a basic one
-        if (profileError.code === 'PGRST116') {
-          console.log('Profile not found, creating basic profile');
-          const { data: authUser } = await supabase.auth.getUser();
-          if (authUser.user) {
-            const newProfile = {
-              user_id: userId,
-              full_name: authUser.user.user_metadata?.full_name || authUser.user.email?.split('@')[0] || 'User',
-              email: authUser.user.email || '',
-              avatar_url: '/ceo.jpg'
-            };
-            
-            const { data: createdProfile, error: createError } = await supabase
-              .from('profiles')
-              .insert(newProfile)
-              .select()
-              .single();
-              
-            if (createError) {
-              console.error('Error creating profile:', createError);
-              throw createError;
-            }
+      let profile = profileData;
 
-            // Create default student role
-            await supabase
-              .from('user_roles')
-              .insert({
-                user_id: userId,
-                role_type: 'student'
-              });
-            
-            console.log('Profile created:', createdProfile);
-            
-            // Get the role for the newly created user
-            const { data: roleData } = await supabase
-              .from('user_roles')
-              .select('role_type, is_active')
-              .eq('user_id', userId)
-              .eq('is_active', true)
-              .single();
-            
-            const userRole = roleData?.role_type || 'student';
-            
-            setUser({
-              id: createdProfile.id,
-              name: createdProfile.full_name,
-              email: createdProfile.email,
-              avatar: createdProfile.avatar_url,
-              role: userRole,
-              createdAt: createdProfile.created_at,
-              updatedAt: createdProfile.updated_at
-            });
-            setIsLoading(false);
-            return;
-          }
+      // If no profile exists, create one
+      if (!profile && authUser) {
+        console.log('Creating new profile for user:', userId);
+        
+        const newProfileData = {
+          user_id: userId,
+          full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+          email: authUser.email || '',
+          avatar_url: '/ceo.jpg'
+        };
+
+        const { data: createdProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert(newProfileData)
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          throw createError;
         }
-        throw profileError;
+
+        profile = createdProfile;
+        console.log('Profile created successfully:', profile);
       }
 
-      console.log('Profile fetched successfully:', profileData);
-      
-      // Now fetch the user roles separately
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role_type, is_active')
-        .eq('user_id', userId)
-        .eq('is_active', true)
-        .single();
-      
-      if (roleError && roleError.code !== 'PGRST116') {
-        console.error('Role fetch error:', roleError);
+      if (!profile) {
+        throw new Error('Could not create or fetch user profile');
       }
+
+      // Determine user role based on email for demo accounts
+      let userRole = 'student'; // default role
       
-      // Get the role, default to 'student' if no role found
-      const userRole = roleData?.role_type || 'student';
-      
-      console.log('User role fetched:', userRole);
-      
+      if (authUser?.email) {
+        const email = authUser.email.toLowerCase();
+        if (email === 'superadmin@lera-academy.com') {
+          userRole = 'super_admin';
+        } else if (email === 'admin@lera-academy.com') {
+          userRole = 'admin';
+        } else if (email === 'teacher@lera-academy.com') {
+          userRole = 'instructor';
+        } else if (email === 'hr@lera-academy.com') {
+          userRole = 'hr_staff';
+        } else if (email === 'employee@lera-academy.com') {
+          userRole = 'employee';
+        }
+      }
+
+      console.log('User role determined:', userRole);
+
+      // Set user state
       setUser({
-        id: profileData.id,
-        name: profileData.full_name || 'User',
-        email: profileData.email || '',
-        avatar: profileData.avatar_url || '/ceo.jpg',
+        id: profile.id,
+        name: profile.full_name || 'User',
+        email: profile.email || authUser?.email || '',
+        avatar: profile.avatar_url || '/ceo.jpg',
         role: userRole,
-        createdAt: profileData.created_at,
-        updatedAt: profileData.updated_at
+        createdAt: profile.created_at || new Date().toISOString(),
+        updatedAt: profile.updated_at || new Date().toISOString()
       });
+
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error in fetchUserProfile:', error);
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -164,106 +162,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       console.log('Attempting login for:', email);
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
         password
       });
-      if (error) throw error;
-      
-      console.log('Login successful, fetching profile...');
-      // Get the session after login to ensure user is set
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        console.log('Session user found:', session.user.id);
-        await fetchUserProfile(session.user.id);
-      } else {
-        console.error('No session found after login');
-        throw new Error('Login failed - no session');
+
+      if (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
+
+      if (data.user) {
+        console.log('Login successful for user:', data.user.id);
+        await fetchUserProfile(data.user.id);
       }
     } catch (error) {
-      console.error('Login error:', error);
       setIsLoading(false);
       throw error;
     }
   };
 
   const register = async (name: string, email: string, password: string) => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
+      console.log('Attempting registration for:', email);
+      
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
           data: {
-            full_name: name
+            full_name: name.trim()
           }
         }
       });
-      
+
       if (error) {
+        console.error('Registration error:', error);
         throw error;
       }
 
       if (data.user) {
-        const newProfile = {
-          user_id: data.user.id,
-          full_name: name,
-          email: email,
-          avatar_url: '/ceo.jpg'
-        };
-        
-        const { data: createdProfile, error: profileError } = await supabase
-          .from('profiles')
-          .insert(newProfile)
-          .select()
-          .single();
-        
-        if (profileError) {
-          if (!profileError.message.includes('duplicate key')) {
-            throw profileError;
-          }
-        }
-
-        // Create default role for new user
-        if (data.user) {
-          let defaultRole = 'student';
-          
-          // Set special roles for demo accounts
-          if (email === 'teacher@lera-academy.com') defaultRole = 'instructor';
-          if (email === 'admin@lera-academy.com') defaultRole = 'admin';
-          if (email === 'superadmin@lera-academy.com') defaultRole = 'super_admin';
-          
-          await supabase
-            .from('user_roles')
-            .insert({
-              user_id: data.user.id,
-              role_type: defaultRole
-            });
-        }
-
-        if (createdProfile) {
-          // Determine role for user object
-          let userRole = 'student';
-          if (email === 'teacher@lera-academy.com') userRole = 'instructor';
-          if (email === 'admin@lera-academy.com') userRole = 'admin';
-          if (email === 'superadmin@lera-academy.com') userRole = 'super_admin';
-          
-          setUser({
-            id: createdProfile.id,
-            name: createdProfile.full_name,
-            email: createdProfile.email,
-            avatar: createdProfile.avatar_url,
-            role: userRole,
-            createdAt: createdProfile.created_at,
-            updatedAt: createdProfile.updated_at
-          });
-        } else {
-          // If profile creation failed but no error, try to fetch existing profile
-          await fetchUserProfile(data.user.id);
-        }
+        console.log('Registration successful for user:', data.user.id);
+        await fetchUserProfile(data.user.id);
       }
     } catch (error) {
       setIsLoading(false);
@@ -272,37 +217,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-  };
-
-  const updateProfile = async (data: Partial<User>) => {
-    if (!user) return;
-
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: data.name,
-          avatar_url: data.avatar,
-          bio: data.bio
-        })
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      setUser({ ...user, ...data });
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error);
+        throw error;
+      }
+      setUser(null);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('Error during logout:', error);
       throw error;
     }
   };
 
-  const seedDemoAccounts = async () => {
-    // Demo accounts will be created automatically when users try to log in
-    // This is just for UI feedback
-    console.log('Demo accounts are available for login');
-    return { success: true, message: 'Demo accounts are ready for login' };
+  const updateProfile = async (data: Partial<User>) => {
+    if (!user) {
+      throw new Error('No user logged in');
+    }
+
+    try {
+      const updateData: any = {};
+      if (data.name) updateData.full_name = data.name;
+      if (data.avatar) updateData.avatar_url = data.avatar;
+      if (data.bio) updateData.bio = data.bio;
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Profile update error:', error);
+        throw error;
+      }
+
+      // Update local user state
+      setUser(prevUser => prevUser ? { ...prevUser, ...data } : null);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
   };
 
   return (

@@ -81,14 +81,13 @@ const AuthPage = () => {
       if (isRegister) {
         await register(formData.name, formData.email, formData.password);
         showToast.success('Account created successfully! Welcome to LERA Academy!');
-        const redirectTo = searchParams.get('redirect') || '/dashboard';
-        navigate(redirectTo);
+        // Let the auth state change handle the redirect
       } else {
         try {
           await login(formData.email, formData.password);
           showToast.success('Welcome back! Loading your dashboard...');
-          const redirectTo = searchParams.get('redirect') || '/dashboard';
-          navigate(redirectTo);
+          // Let the auth state change handle the redirect
+          // navigate will be handled by RoleBasedRedirect component
         } catch (loginError: any) {
           // If login fails with invalid credentials and it's a demo account, try to create it first
           if (loginError?.code === 'invalid_credentials' && isDemoAccount(formData.email)) {
@@ -99,8 +98,7 @@ const AuthPage = () => {
               showToast.success('Demo account created! Logging you in...');
               await login(formData.email, formData.password);
               showToast.success('Welcome to LERA Academy!');
-              const redirectTo = searchParams.get('redirect') || '/dashboard';
-              navigate(redirectTo);
+              // Let the auth state change handle the redirect
             } catch (registerError: any) {
               // If registration also fails, show the original login error
               throw loginError;

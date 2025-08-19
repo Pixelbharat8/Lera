@@ -68,6 +68,7 @@ function App() {
                         <Route path={ROUTES.COURSE_DETAIL} element={<CourseDetailPage />} />
                         <Route path={ROUTES.LESSON} element={<LessonPage />} />
                         <Route path={ROUTES.DASHBOARD} element={<RoleBasedRedirect />} />
+                        <Route path="/automation" element={<RoleBasedRedirect />} />
                         <Route path={ROUTES.TASKS} element={<TasksPage />} />
                         <Route path={ROUTES.ABOUT} element={<AboutPage />} />
                         <Route path={ROUTES.CONTACT} element={<ContactPage />} />

@@ -20,10 +20,8 @@ const Navbar = () => {
     { name: t('nav.home'), path: '/' },
     { name: t('nav.courses'), path: '/courses' },
     { name: t('nav.about'), path: '/about' },
-    { name: t('nav.tasks'), path: '/tasks' },
-    { name: t('nav.workflows'), path: '/workflows' },
     { name: t('nav.contact'), path: '/contact' },
-    ...(user?.role === 'admin' ? [{ name: t('nav.admin'), path: '/admin' }] : [])
+    ...(user?.role === 'admin' || user?.role === 'super_admin' ? [{ name: t('nav.admin'), path: '/admin' }] : [])
   ];
 
   const languages = [
