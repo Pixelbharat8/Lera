@@ -23,6 +23,7 @@ import EmployeeRoutes from './routes/EmployeeRoutes';
 import HRRoutes from './routes/HRRoutes';
 import ServerStatusPage from './pages/ServerStatusPage';
 import WorkflowsPage from './pages/WorkflowsPage';
+import AutomationDashboard from './components/automation/AutomationDashboard';
 import RoleBasedRedirect from './components/auth/RoleBasedRedirect';
 import { AuthProvider } from './contexts/AuthContext';
 import { CourseProvider } from './contexts/CourseContext';
@@ -78,6 +79,7 @@ function App() {
                         <Route path="/settings" element={<SettingsPage />} />
                         <Route path={ROUTES.SERVER_STATUS} element={<ServerStatusPage />} />
                         <Route path={ROUTES.WORKFLOWS} element={<WorkflowsPage />} />
+                        <Route path="/automation" element={<AutomationDashboard />} />
                       </Routes>
                     </main>
                     <Footer />
