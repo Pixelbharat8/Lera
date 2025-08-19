@@ -18,9 +18,11 @@ import {
   GraduationCap,
   ClipboardCheck,
   Zap,
-  Shield
+  Shield,
+  Trophy,
+  FileText,
+  MapPin
 } from 'lucide-react';
-import { Trophy, FileText, MapPin } from 'lucide-react';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
