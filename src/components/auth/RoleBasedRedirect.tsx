@@ -21,28 +21,28 @@ const RoleBasedRedirect = () => {
       switch (user.role) {
         case 'super_admin':
           console.log('Redirecting to super admin dashboard');
-          navigate('/admin');
+          navigate('/admin', { replace: true });
           break;
         case 'admin':
           console.log('Redirecting to admin dashboard');
-          navigate('/admin');
+          navigate('/admin', { replace: true });
           break;
         case 'instructor':
           console.log('Redirecting to teacher dashboard');
-          navigate('/teacher');
+          navigate('/teacher', { replace: true });
           break;
         case 'hr_staff':
           console.log('Redirecting to HR dashboard');
-          navigate('/hr');
+          navigate('/hr', { replace: true });
           break;
         case 'employee':
           console.log('Redirecting to employee dashboard');
-          navigate('/employee');
+          navigate('/employee', { replace: true });
           break;
         case 'student':
         default:
           console.log('Redirecting to student dashboard');
-          navigate('/student');
+          navigate('/student', { replace: true });
           break;
       }
     }
