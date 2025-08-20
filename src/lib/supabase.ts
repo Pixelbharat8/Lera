@@ -22,11 +22,11 @@ export const supabase = createClient<Database>(
   }
 );
 
-// Test connection
+// Test connection and log status
 supabase.from('profiles').select('count').limit(1).then(
   ({ data, error }) => {
     if (error) {
-      console.error('Supabase connection test failed:', error);
+      console.error('❌ Supabase connection test failed:', error);
     } else {
       console.log('✅ Supabase connected successfully');
     }

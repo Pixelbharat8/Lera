@@ -54,62 +54,67 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return 'student'; // Default role
   };
 
-  const createOrUpdateProfile = async (authUser: SupabaseUser): Promise<User> => {
+  const createUserProfile = async (authUser: SupabaseUser): Promise<User> => {
     try {
       const role = determineUserRole(authUser.email || '');
       
-      // Check if profile exists
+      console.log('Creating profile for user:', authUser.email, 'with role:', role);
+      
+      // Try to get existing profile first
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', authUser.id)
         .single();
 
-      let profile;
-      
       if (existingProfile) {
-        // Update existing profile
-        const { data: updatedProfile, error } = await supabase
-          .from('profiles')
-          .update({
-            email: authUser.email,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', authUser.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        profile = updatedProfile;
-      } else {
-        // Create new profile
-        const { data: newProfile, error } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: authUser.id,
-            full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-            email: authUser.email || '',
-            avatar_url: authUser.user_metadata?.avatar_url || '/ceo.jpg',
-            role: role
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        profile = newProfile;
+        console.log('Profile already exists, using existing profile');
+        return {
+          id: existingProfile.id,
+          name: existingProfile.full_name || authUser.email?.split('@')[0] || 'User',
+          email: existingProfile.email || authUser.email || '',
+          avatar: existingProfile.avatar_url || '/ceo.jpg',
+          role: existingProfile.role || role,
+          createdAt: existingProfile.created_at || new Date().toISOString(),
+          updatedAt: existingProfile.updated_at || new Date().toISOString()
+        };
       }
 
+      // Create new profile
+      const profileData = {
+        user_id: authUser.id,
+        full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+        email: authUser.email || '',
+        avatar_url: authUser.user_metadata?.avatar_url || '/ceo.jpg',
+        role: role
+      };
+
+      console.log('Creating new profile with data:', profileData);
+
+      const { data: newProfile, error } = await supabase
+        .from('profiles')
+        .insert(profileData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Profile creation error:', error);
+        throw error;
+      }
+
+      console.log('Profile created successfully:', newProfile);
+
       return {
-        id: profile.id,
-        name: profile.full_name || 'User',
-        email: profile.email || authUser.email || '',
-        avatar: profile.avatar_url || '/ceo.jpg',
-        role: role,
-        createdAt: profile.created_at || new Date().toISOString(),
-        updatedAt: profile.updated_at || new Date().toISOString()
+        id: newProfile.id,
+        name: newProfile.full_name || 'User',
+        email: newProfile.email || authUser.email || '',
+        avatar: newProfile.avatar_url || '/ceo.jpg',
+        role: newProfile.role || role,
+        createdAt: newProfile.created_at || new Date().toISOString(),
+        updatedAt: newProfile.updated_at || new Date().toISOString()
       };
     } catch (error) {
-      console.error('Error creating/updating profile:', error);
+      console.error('Error in createUserProfile:', error);
       throw error;
     }
   };
@@ -119,6 +124,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initializeAuth = async () => {
       try {
+        console.log('Initializing auth...');
+        
         // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
         
@@ -132,10 +139,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (session?.user && mounted) {
-          console.log('Initial session found, creating profile...');
-          const userProfile = await createOrUpdateProfile(session.user);
-          setUser(userProfile);
+          console.log('Initial session found for user:', session.user.email);
+          try {
+            const userProfile = await createUserProfile(session.user);
+            setUser(userProfile);
+            console.log('User profile set:', userProfile);
+          } catch (profileError) {
+            console.error('Error creating profile during init:', profileError);
+            setUser(null);
+          }
         } else if (mounted) {
+          console.log('No initial session found');
           setUser(null);
         }
       } catch (error) {
@@ -155,15 +169,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
+        console.log('Auth state changed:', event, session?.user?.email);
         
         if (!mounted) return;
 
         if (event === 'SIGNED_IN' && session?.user) {
           try {
             setIsLoading(true);
-            const userProfile = await createOrUpdateProfile(session.user);
+            const userProfile = await createUserProfile(session.user);
             setUser(userProfile);
+            console.log('Sign in successful, user profile set:', userProfile);
           } catch (error) {
             console.error('Error handling sign in:', error);
             setUser(null);
@@ -171,6 +186,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsLoading(false);
           }
         } else if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
           setUser(null);
           setIsLoading(false);
         }
@@ -185,8 +201,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
-      console.log('Attempting login for:', email);
+      console.log('Login attempt for:', email);
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -198,22 +213,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      if (data.user) {
-        console.log('Login successful, creating profile...');
-        const userProfile = await createOrUpdateProfile(data.user);
-        setUser(userProfile);
-        console.log('User profile set:', userProfile);
-      }
+      console.log('Login successful for:', email);
+      // User state will be updated by the auth state change listener
     } catch (error) {
-      setIsLoading(false);
+      console.error('Login failed:', error);
       throw error;
     }
   };
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      setIsLoading(true);
-      console.log('Attempting registration for:', email);
+      console.log('Registration attempt for:', email);
 
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
@@ -230,14 +240,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      if (data.user) {
-        console.log('Registration successful, creating profile...');
-        const userProfile = await createOrUpdateProfile(data.user);
-        setUser(userProfile);
-        console.log('User profile set:', userProfile);
-      }
+      console.log('Registration successful for:', email);
+      // User state will be updated by the auth state change listener
     } catch (error) {
-      setIsLoading(false);
+      console.error('Registration failed:', error);
       throw error;
     }
   };
