@@ -153,6 +153,9 @@ const AuthPage = () => {
             navigate({ ...location, search: newSearchParams.toString() }, { replace: true });
             // Clear registration-only fields
             setFormData(prev => ({ ...prev, name: '', confirmPassword: '' }));
+            // Don't set form error when auto-switching - toast will handle user feedback
+            showToast.error(errorMessage);
+            return; // Exit early to prevent setting form error
             break;
           }
           case 'invalid_credentials':
@@ -168,6 +171,15 @@ const AuthPage = () => {
         if (errorDetailMessage.includes('User already registered') || errorDetailMessage.includes('user_already_exists')) {
           errorMessage = 'This email is already registered. Please sign in instead.';
           setIsRegister(false);
+          // Update URL to remove register parameter
+          const newSearchParams = new URLSearchParams(location.search);
+          newSearchParams.delete('register');
+          navigate({ ...location, search: newSearchParams.toString() }, { replace: true });
+          // Clear registration-only fields
+          setFormData(prev => ({ ...prev, name: '', confirmPassword: '' }));
+          // Don't set form error when auto-switching - toast will handle user feedback
+          showToast.error(errorMessage);
+          return; // Exit early to prevent setting form error
         } else if (errorDetailMessage.includes('Invalid login credentials')) {
           errorMessage = 'Invalid email or password. Please check your credentials and try again.';
         } else {
