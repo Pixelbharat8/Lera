@@ -86,26 +86,8 @@ const AuthPage = () => {
         try {
           await login(formData.email, formData.password);
           showToast.success('Welcome back! Loading your dashboard...');
-          // Let the auth state change handle the redirect
-          // navigate will be handled by RoleBasedRedirect component
         } catch (loginError: any) {
-          // If login fails with invalid credentials and it's a demo account, try to create it first
-          if (loginError?.code === 'invalid_credentials' && isDemoAccount(formData.email)) {
-            try {
-              showToast.info('Demo account not found. Creating it for you...');
-              const demoName = getDemoAccountName(formData.email);
-              await register(demoName, formData.email, formData.password);
-              showToast.success('Demo account created! Logging you in...');
-              await login(formData.email, formData.password);
-              showToast.success('Welcome to LERA Academy!');
-              // Let the auth state change handle the redirect
-            } catch (registerError: any) {
-              // If registration also fails, show the original login error
-              throw loginError;
-            }
-          } else {
-            throw loginError;
-          }
+          throw loginError;
         }
       }
     } catch (error: any) {
@@ -209,25 +191,6 @@ const AuthPage = () => {
     });
   };
 
-  const isDemoAccount = (email: string) => {
-    const demoEmails = [
-      'demo@lera-academy.com',
-      'teacher@lera-academy.com', 
-      'admin@lera-academy.com',
-      'superadmin@lera-academy.com'
-    ];
-    return demoEmails.includes(email.toLowerCase());
-  };
-
-  const getDemoAccountName = (email: string) => {
-    switch (email.toLowerCase()) {
-      case 'demo@lera-academy.com': return 'Demo Student';
-      case 'teacher@lera-academy.com': return 'Demo Teacher';
-      case 'admin@lera-academy.com': return 'Demo Admin';
-      case 'superadmin@lera-academy.com': return 'Super Admin';
-      default: return 'Demo User';
-    }
-  };
   const toggleAuthMode = () => {
     setIsRegister(!isRegister);
     setErrors({});
@@ -272,9 +235,9 @@ const AuthPage = () => {
                 <div className="font-medium">{errors.form}</div>
                 {errors.form.includes('Invalid email or password') && (
                   <div className="text-xs mt-2 space-y-1">
-                    <p>• Try the demo accounts below</p>
                     <p>• Make sure you have an account - try signing up instead</p>
                     <p>• Password is case-sensitive</p>
+                    <p>• Contact support if you continue having issues</p>
                   </div>
                 )}
                 {errors.form.includes('already registered') && (
@@ -448,34 +411,15 @@ const AuthPage = () => {
             </div>
           </form>
           
-          {/* Demo Accounts */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-center mb-3">
-              <p className="text-sm font-medium text-blue-800">Demo Accounts Available</p>
-              <p className="text-xs text-blue-600">Click to fill credentials automatically</p>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: 'Student', email: 'demo@lera-academy.com', password: 'demo123456', name: 'Demo Student' },
-                { label: 'Teacher', email: 'teacher@lera-academy.com', password: 'demo123456', name: 'Demo Teacher' },
-                { label: 'Admin', email: 'admin@lera-academy.com', password: 'demo123456', name: 'Demo Admin' },
-                { label: 'Super Admin', email: 'superadmin@lera-academy.com', password: 'demo123456', name: 'Super Admin' }
-              ].map((account) => (
-                <button
-                  key={account.email}
-                  type="button"
-                  onClick={() => fillDemoCredentials(account.email, account.password, account.name)}
-                  className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-2 rounded transition-colors font-medium"
-                >
-                  {account.label}
-                </button>
-              ))}
-            </div>
-            
-            <div className="mt-3 text-center">
-              <p className="text-xs text-blue-700">
-                All demo accounts use password: <code className="bg-blue-100 px-1 rounded">demo123456</code>
+          {/* Help Text */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-800">New to LERA Academy?</p>
+              <p className="text-xs text-gray-600 mt-1">
+                {isRegister 
+                  ? 'Create your account to start your English learning journey with our expert instructors.'
+                  : 'Sign in to access your courses, track progress, and continue learning.'
+                }
               </p>
             </div>
           </div>

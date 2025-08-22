@@ -40,16 +40,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const determineUserRole = (email: string): User['role'] => {
     const emailLower = email.toLowerCase();
     
-    if (emailLower === 'superadmin@lera-academy.com') return 'super_admin';
-    if (emailLower === 'admin@lera-academy.com') return 'admin';
-    if (emailLower === 'teacher@lera-academy.com') return 'instructor';
-    if (emailLower === 'hr@lera-academy.com') return 'hr_staff';
-    if (emailLower === 'employee@lera-academy.com') return 'employee';
-    
-    // Check for instructor emails
-    if (emailLower.includes('teacher') || emailLower.includes('instructor')) return 'instructor';
-    if (emailLower.includes('admin')) return 'admin';
-    if (emailLower.includes('hr')) return 'hr_staff';
+    // Check for specific admin emails
+    if (emailLower.endsWith('@lera-academy.com')) {
+      if (emailLower.includes('superadmin')) return 'super_admin';
+      if (emailLower.includes('admin')) return 'admin';
+      if (emailLower.includes('teacher') || emailLower.includes('instructor')) return 'instructor';
+      if (emailLower.includes('hr')) return 'hr_staff';
+      if (emailLower.includes('employee')) return 'employee';
+    }
     
     return 'student'; // Default role
   };
