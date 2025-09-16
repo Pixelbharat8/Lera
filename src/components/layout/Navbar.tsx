@@ -360,3 +360,8 @@ const Navbar = () => {
             Join Our Team
           </Link>
         </div>
+    </nav>
+  );
+};
+
+export default Navbar;
