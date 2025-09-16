@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { Course, Lesson, SearchFilters, CourseStats } from '../types/index';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../hooks/useAuth';
 import { 
   mockCourses, 
   mockLessons, 
@@ -52,7 +51,6 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
 
   const loadCourses = useCallback(async () => {
     try {
@@ -63,19 +61,6 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
       console.log('Loading mock courses:', mockCourses.length);
       setCourses(mockCourses);
       setLessons(mockLessons);
-
-      // For demo purposes, mark some courses as enrolled for authenticated users
-      if (user) {
-        setCourses(prevCourses =>
-          prevCourses.map((course, index) => {
-            // Mark first 2 courses as enrolled for demo
-            if (index < 2) {
-              return { ...course, enrolled: true, progress: Math.floor(Math.random() * 80) + 20 };
-            }
-            return course;
-          })
-        );
-      }
       
       console.log('Courses loaded successfully:', mockCourses.length);
     } catch (err) {
@@ -84,11 +69,11 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     loadCourses();
-  }, [user, loadCourses]);
+  }, [loadC ourses]);
   const getCourse = (id: string) => {
     return courses.find(course => course.id === id);
   };

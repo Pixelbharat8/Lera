@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
 import { useCourses } from '../../hooks/useCourses';
 import { useLanguage } from '../../hooks/useLanguage';
 import { showToast } from '../ui/Toast';
@@ -14,7 +13,6 @@ interface CourseCardProps {
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ 
-  course, 
   showProgress = false, 
   variant = 'default' 
 }) => {
@@ -26,10 +24,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
     e.preventDefault();
     if (!isAuthenticated) {
       window.location.href = '/auth';
-      return;
-    }
-    
-    try {
       await enrollInCourse(course.id);
       showToast.success(`Successfully enrolled in ${course.title}!`);
     } catch (error) {
@@ -205,7 +199,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
                   onClick={handleEnrollClick}
                   className="text-sm bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition-all duration-300 hover:scale-105 hover:shadow-lg btn-interactive"
                 >
-                  {t('course.enrollNow')}
+                  Enroll Now
                 </button>
               </div>
             )}

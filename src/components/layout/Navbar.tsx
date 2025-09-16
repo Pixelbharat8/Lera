@@ -1,27 +1,22 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
-import { Search, Menu, X, BookOpen, BarChart, User, LogOut, Phone, Bell, MessageSquare, Globe, ChevronDown } from 'lucide-react';
+import { Menu, X, BookOpen, Phone, Globe, ChevronDown } from 'lucide-react';
 
 const Navbar = () => {
-  const { user, isAuthenticated, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   const location = useLocation();
   
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
   const toggleLanguage = () => setIsLanguageOpen(!isLanguageOpen);
   
   const navigation = [
     { name: t('nav.home'), path: '/' },
     { name: t('nav.courses'), path: '/courses' },
     { name: t('nav.about'), path: '/about' },
-    { name: t('nav.contact'), path: '/contact' },
-    ...(user?.role === 'admin' || user?.role === 'super_admin' ? [{ name: t('nav.admin'), path: '/admin' }] : [])
+    { name: t('nav.contact'), path: '/contact' }
   ];
 
   const languages = [
@@ -356,8 +351,12 @@ const Navbar = () => {
           )}
         </div>
       )}
-    </nav>
-  );
-};
-
-export default Navbar;
+        <div className="pt-4 pb-3 border-t border-gray-200 px-4">
+          <Link
+            to="/teacher-registration"
+            className="block w-full text-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 btn-interactive"
+            onClick={toggleMenu}
+          >
+            Join Our Team
+          </Link>
+        </div>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCourses } from '../hooks/useCourses';
-import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
 import CourseCard from '../components/courses/CourseCard';
 import AnimatedCounter from '../components/ui/AnimatedCounter';
@@ -15,7 +14,6 @@ import { Rocket, Trophy, Clock, Users, ArrowRight, BookOpen, GraduationCap, Star
 
 const HomePage = () => {
   const { getFeaturedCourses, getPopularCourses, categories } = useCourses();
-  const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
   
   const featuredCourses = getFeaturedCourses(8);
@@ -98,11 +96,11 @@ const HomePage = () => {
                   {t('home.hero.startLearning')}
                 </Link>
                 <Link
-                  to={isAuthenticated ? "/dashboard" : "/auth"}
+                  to="/teacher-registration"
                   className="btn-3d inline-flex justify-center items-center px-10 py-5 text-lg font-bold rounded-2xl text-white border-2 border-white/40 glass-effect"
                 >
                   <Trophy className="mr-3 h-6 w-6" />
-                  {isAuthenticated ? t('home.hero.myDashboard') : t('home.hero.takeLevelTest')}
+                  Join Our Team
                 </Link>
               </div>
               </div>
@@ -512,11 +510,11 @@ const HomePage = () => {
           
           <InViewAnimation animation="fade-in-up" delay={400} className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
             <Link
-              to={isAuthenticated ? "/courses" : "/auth?register=true"}
+              to="/courses"
               className="btn-3d inline-flex items-center px-12 py-6 text-xl font-bold rounded-2xl text-blue-700 bg-white/95 backdrop-blur-sm border border-white/30"
             >
               <Rocket className="mr-4 h-8 w-8" />
-              {isAuthenticated ? t('home.featured.exploreAll') : t('home.cta.startTrial')}
+              Explore Courses
             </Link>
             
             <Link
