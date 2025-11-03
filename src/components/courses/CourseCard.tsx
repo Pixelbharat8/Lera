@@ -4,6 +4,7 @@ import { useCourses } from '../../hooks/useCourses';
 import { useLanguage } from '../../hooks/useLanguage';
 import { showToast } from '../ui/Toast';
 import AnimatedCounter from '../ui/AnimatedCounter';
+import { Course } from '../../types/index';
 import { Clock, Users, Star, Award, CheckCircle, Play, BookOpen } from 'lucide-react';
 
 interface CourseCardProps {
@@ -12,18 +13,17 @@ interface CourseCardProps {
   variant?: 'default' | 'compact' | 'detailed';
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ 
-  showProgress = false, 
-  variant = 'default' 
+const CourseCard: React.FC<CourseCardProps> = ({
+  course,
+  showProgress = false,
+  variant = 'default'
 }) => {
   const { enrollInCourse } = useCourses();
-  const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
-  
+
   const handleEnrollClick = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!isAuthenticated) {
-      window.location.href = '/auth';
+    try {
       await enrollInCourse(course.id);
       showToast.success(`Successfully enrolled in ${course.title}!`);
     } catch (error) {

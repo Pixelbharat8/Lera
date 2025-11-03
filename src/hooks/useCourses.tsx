@@ -73,7 +73,7 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     loadCourses();
-  }, [loadC ourses]);
+  }, [loadCourses]);
   const getCourse = (id: string) => {
     return courses.find(course => course.id === id);
   };
@@ -90,14 +90,8 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
 
   const enrollInCourse = async (courseId: string) => {
     try {
-      if (!user) {
-        throw new Error('User must be logged in to enroll');
-      }
+      console.log('Enrolling in course:', courseId);
 
-      // For demo purposes, just update local state
-      console.log('Enrolling user in course:', courseId);
-
-      // Update local state
       setCourses(prevCourses =>
         prevCourses.map(course =>
           course.id === courseId
@@ -106,7 +100,6 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
         )
       );
 
-      // Trigger workflow automation
       const course = courses.find(c => c.id === courseId);
       if (course) {
         showToast.success(`Welcome to ${course.title}! Check your notifications for next steps.`);
@@ -119,9 +112,6 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
 
   const markLessonComplete = async (lessonId: string) => {
     try {
-      if (!user) return;
-      
-      // For demo purposes, just update local state
       console.log('Marking lesson complete:', lessonId);
 
       // Update local state
