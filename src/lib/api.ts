@@ -1,3 +1,16 @@
+export interface WorkflowSummary {
+  id: string;
+  name: string;
+  description?: string;
+  status: string;
+  steps: Array<{
+    id: string;
+    title: string;
+    type: string;
+    dueAfterHours: number;
+  }>;
+}
+
 export async function fetchServerHealth(): Promise<{ status: string }> {
   const response = await fetch('/api/health');
   if (!response.ok) {
@@ -6,16 +19,16 @@ export async function fetchServerHealth(): Promise<{ status: string }> {
   return response.json();
 }
 
-export async function fetchWorkflows(): Promise<string[]> {
+export async function fetchWorkflows(): Promise<WorkflowSummary[]> {
   const response = await fetch('/api/workflows');
   if (!response.ok) {
     throw new Error('Failed to fetch workflows');
   }
   const data = await response.json();
-  return data.workflows ?? [];
+  return Array.isArray(data.workflows) ? data.workflows : [];
 }
 
-export async function createWorkflow(name: string): Promise<void> {
+export async function createWorkflow(name: string): Promise<WorkflowSummary> {
   const response = await fetch('/api/workflows', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -24,4 +37,6 @@ export async function createWorkflow(name: string): Promise<void> {
   if (!response.ok) {
     throw new Error('Failed to create workflow');
   }
+  const data = await response.json();
+  return data.workflow;
 }

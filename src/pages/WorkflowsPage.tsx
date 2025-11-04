@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { fetchWorkflows, createWorkflow } from '../lib/api';
+import { fetchWorkflows, createWorkflow, WorkflowSummary } from '../lib/api';
 
 const WorkflowsPage = () => {
-  const [workflows, setWorkflows] = useState<string[]>([]);
+  const [workflows, setWorkflows] = useState<WorkflowSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [newWorkflow, setNewWorkflow] = useState('');
@@ -60,9 +60,42 @@ const WorkflowsPage = () => {
       {workflows.length === 0 ? (
         <p>No workflows available</p>
       ) : (
-        <ul className="list-disc pl-5">
-          {workflows.map((wf, idx) => (
-            <li key={idx}>{wf}</li>
+        <ul className="space-y-3">
+          {workflows.map((workflow) => (
+            <li key={workflow.id} className="rounded border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">{workflow.name}</h2>
+                  {workflow.description ? (
+                    <p className="text-sm text-gray-600">{workflow.description}</p>
+                  ) : null}
+                </div>
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    workflow.status === 'active'
+                      ? 'bg-green-100 text-green-800'
+                      : workflow.status === 'draft'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  {workflow.status}
+                </span>
+              </div>
+              {workflow.steps.length > 0 ? (
+                <div className="mt-3">
+                  <h3 className="text-sm font-medium text-gray-700">Steps</h3>
+                  <ol className="mt-1 list-decimal space-y-1 pl-5 text-sm text-gray-600">
+                    {workflow.steps.map((step) => (
+                      <li key={step.id}>
+                        <span className="font-medium text-gray-800">{step.title}</span>{' '}
+                        <span className="text-gray-500">({step.type}, due +{step.dueAfterHours}h)</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ) : null}
+            </li>
           ))}
         </ul>
       )}
